@@ -1,0 +1,63 @@
+/**
+ * 
+ */
+package edu.cmu.lti.oaqa.graph.canonical;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
+/**
+ * @author jackm321
+ *
+ */
+public class CanonicalQuery {
+	
+	private LinkedList<CanonicalChunk> canonicalChunks=new LinkedList<CanonicalChunk>();
+	
+	public CanonicalQuery(Iterable<CanonicalChunk> canonicalChunks){
+		this.canonicalChunks=(LinkedList<CanonicalChunk>) canonicalChunks;
+	}
+	
+	public void addCanonicalChunk(CanonicalChunk canonicalChunk){
+		List<CanonicalChunk> list = (List<CanonicalChunk>) this.canonicalChunks;
+		list.add(canonicalChunk);
+	}
+	
+	public Iterable<CanonicalChunk> getCanonicalChunksIterable(){
+		return Lists.newCopyOnWriteArrayList(this.canonicalChunks);
+	}
+	
+	public List<CanonicalChunk> getCanonicalChunksList(){
+		return Lists.newCopyOnWriteArrayList(this.canonicalChunks);
+	}
+	
+	public boolean isEmpty(){
+		return canonicalChunks.isEmpty();
+	}
+	
+	public int length(){
+		return this.canonicalChunks.size();
+	}
+	
+	public boolean oneChunkLeft(){
+		return this.canonicalChunks.size()==1;
+	}
+	
+	public CanonicalChunk get(int index){
+		return this.canonicalChunks.get(index);
+	}
+	
+	public CanonicalChunk pop(){
+		return this.canonicalChunks.pop();
+	}
+	
+	public CanonicalChunk peek(){
+		return this.canonicalChunks.peek();
+	}
+	
+	
+	
+}
+

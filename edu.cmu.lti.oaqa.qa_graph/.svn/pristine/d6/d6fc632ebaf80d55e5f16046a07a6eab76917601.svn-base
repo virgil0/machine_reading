@@ -1,0 +1,100 @@
+/**
+ * 
+ */
+package edu.cmu.lti.oaqa.graph.canonical;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
+import edu.cmu.lti.oaqa.graph.exceptions.KBException;
+
+/**
+ * @author jackm321
+ *
+ */
+public class CanonicalQuery {
+	
+	private LinkedList<CanonicalChunk> canonicalChunks=new LinkedList<CanonicalChunk>();
+	
+	public CanonicalQuery(Iterable<CanonicalChunk> canonicalChunks){
+		this.canonicalChunks=(LinkedList<CanonicalChunk>) canonicalChunks;
+	}
+	
+	public CanonicalQuery(String query) throws KBException{
+		this.canonicalChunks=createChunksFromString(query);
+	}
+
+	public void addCanonicalChunk(CanonicalChunk canonicalChunk){
+		List<CanonicalChunk> list = (List<CanonicalChunk>) this.canonicalChunks;
+		list.add(canonicalChunk);
+	}
+	
+	public Iterable<CanonicalChunk> getCanonicalChunksIterable(){
+		return Lists.newCopyOnWriteArrayList(this.canonicalChunks);
+	}
+	
+	public List<CanonicalChunk> getCanonicalChunksList(){
+		return Lists.newCopyOnWriteArrayList(this.canonicalChunks);
+	}
+	
+	public boolean isEmpty(){
+		return canonicalChunks.isEmpty();
+	}
+	
+	public int length(){
+		return this.canonicalChunks.size();
+	}
+	
+	public boolean oneChunkLeft(){
+		return this.canonicalChunks.size()==1;
+	}
+	
+	public CanonicalChunk get(int index){
+		return this.canonicalChunks.get(index);
+	}
+	
+	public CanonicalChunk pop(){
+		return this.canonicalChunks.pop();
+	}
+	
+	public CanonicalChunk peek(){
+		return this.canonicalChunks.peek();
+	}
+	
+	public CanonicalChunk getLastChunk(){
+		return this.canonicalChunks.getLast();
+	}
+	
+	
+	private LinkedList<CanonicalChunk> createChunksFromString(String query) throws KBException {
+		LinkedList<CanonicalChunk> chunks = new LinkedList<CanonicalChunk>();
+		if(!( query.startsWith("[[") && query.endsWith("]]") )) throw new KBException("invalid query string: "+
+		"\""+query+"\"");
+		for(String subQuery:Splitter.on("],[").split(query.substring(2, query.length()-2))){
+			chunks.add(createChunkFromString(subQuery));
+		}
+		return chunks;
+	}
+
+	private CanonicalChunk createChunkFromString(String subQuery) throws KBException {
+		subQuery=subQuery.toLowerCase();
+		List<String> split = Lists.newArrayList(Splitter.on(":").split(subQuery));
+		Verb verb;
+		if(split.get(0).equals("traverse")) verb=Verb.TRAVERSE;
+		else if (split.get(0).equals("traversein")) verb=Verb.TRAVERSEIN;
+		else if (split.get(0).equals("traverseout")) verb=Verb.TRAVERSEOUT;
+		else if (split.get(0).equals("text")) verb=Verb.TEXT;
+		else if (split.get(0).equals("type")) verb=Verb.TYPE;
+		else throw new KBException("invalid query, invalid verb: "+
+									"\"" + split.get(0) + "\"");
+		String noun = split.get(1);
+		return new CanonicalChunk(verb,noun);
+	}
+	
+	
+	
+}
+

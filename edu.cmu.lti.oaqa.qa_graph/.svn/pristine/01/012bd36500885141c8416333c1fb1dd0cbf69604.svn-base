@@ -1,0 +1,23 @@
+package edu.cmu.lti.oaqa.graph.canonical;
+
+import java.util.Map;
+
+import com.tinkerpop.blueprints.Vertex;
+
+public class QueryResult{
+	Iterable<Map<String,String>> strings;
+	Iterable<Vertex> vertices;
+	
+	QueryResult(Iterable<Map<String,String>> strings, Iterable<Vertex> vertices){
+		this.strings=strings;
+		this.vertices=vertices;
+	}
+	
+	public Iterable<Map<String,String>> getStrings(){
+		return this.strings;
+	}
+	
+	public Iterable<Vertex> getVertices(){
+		return this.vertices;
+	}
+}

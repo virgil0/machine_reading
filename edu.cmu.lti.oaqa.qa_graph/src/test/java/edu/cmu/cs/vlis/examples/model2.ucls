@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.4" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true">  
+  <class id="1" language="java" name="edu.cmu.cs.vlis.matching.Matching" project="GraphAlgorithms" 
+    file="/GraphAlgorithms/src/edu/cmu/cs/vlis/matching/Matching.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="242" width="221" x="623" y="37"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="edu.cmu.cs.vlis.matching.ExactIsomorphism" project="GraphAlgorithms" 
+    file="/GraphAlgorithms/src/edu/cmu/cs/vlis/matching/ExactIsomorphism.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="206" width="271" x="41" y="319"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="edu.cmu.cs.vlis.matching.ExactMatching" project="GraphAlgorithms" 
+    file="/GraphAlgorithms/src/edu/cmu/cs/vlis/matching/ExactMatching.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="206" width="251" x="1280" y="319"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="edu.cmu.cs.vlis.matching.InexactIsomorphism" project="GraphAlgorithms" 
+    file="/GraphAlgorithms/src/edu/cmu/cs/vlis/matching/InexactIsomorphism.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="206" width="424" x="352" y="319"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="edu.cmu.cs.vlis.matching.InexactMatching" project="GraphAlgorithms" 
+    file="/GraphAlgorithms/src/edu/cmu/cs/vlis/matching/InexactMatching.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="206" width="424" x="816" y="319"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <generalization id="6">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="7">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="8">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="9">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
+    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>

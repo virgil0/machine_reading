@@ -1,0 +1,171 @@
+package edu.cmu.lti.oaqa.graph.canonical;
+
+import java.util.Set;
+
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Features;
+import com.tinkerpop.blueprints.KeyIndexableGraph;
+import com.tinkerpop.blueprints.Vertex;
+
+import edu.cmu.lti.oaqa.graph.core.tools.Tools;
+import edu.cmu.lti.oaqa.graph.exceptions.KBException;
+
+
+
+public class KGraph implements KeyIndexableGraph {
+
+	private KeyIndexableGraph graph;
+	private GraphSearch searchClass;
+	private CustomNouns customizer;
+	private Tools tools = new Tools();
+	//TODO put Tools in KBCore
+	
+	//constructors
+	KGraph(KeyIndexableGraph graph,GraphSearch searchClass, CustomNouns customizer){
+		this.graph=graph;
+		this.searchClass=searchClass;
+		this.customizer=customizer;
+	}
+	
+	KGraph(KeyIndexableGraph graph,GraphSearch searchClass){
+		this.graph=graph;
+		this.searchClass=searchClass;
+	}
+	
+	KGraph(KeyIndexableGraph graph){
+		this.graph=graph;
+	}
+
+	
+	//getter and setters
+	public KeyIndexableGraph getUnderlyingGraph() {
+		return graph;
+	}
+
+	public GraphSearch getSearchClass() {
+		return searchClass;
+	}
+
+	public void setSearchClass(GraphSearch searchClass) {
+		this.searchClass = searchClass;
+	}
+
+	public CustomNouns getCustomizer() {
+		return customizer;
+	}
+
+	public void setCustomizer(CustomNouns customizer) {
+		this.customizer = customizer;
+	}
+	
+	
+	//new methods
+	public Iterable<Vertex> handleJSON(String JSON){
+		//TODO make JSON server thing
+		return null;
+	}
+
+	public Vertex getOtherVertexOnEdge(Vertex vertex, Edge edge){
+		return this.tools.getOtherVertexOnEdge(edge, vertex);
+	}
+	
+	public Iterable<Edge> getEdgesBetweenTwoVertices(Vertex v1, Vertex v2){
+		return this.tools.getEdges(v1, v2);
+	}
+	
+	public Vertex getSingularVertexFromIndex(String key,Object value){
+		return this.tools.getSingularVertexFromIndex(this.graph, key, value);
+	}
+	
+	public void clearGraph(){
+		//TODO need to change this so that it drops keys too
+		this.tools.clearGraph(graph);
+	}
+	
+	public Vertex findOrCreateVertex(String key, Object value){
+		return this.tools.findOrCreateVertex(this.graph, key, value);
+	}
+	
+	public Iterable<Vertex> multiIndexSearch(Object searchObject){
+		//TODO figure out how to utilize the graphcore search here
+		return null;
+	}
+	
+	public Iterable<Vertex> findShortestPath(Vertex v1, Vertex v2){
+		//TODO need to implement Dijkstra or DoubleDijkstra search here
+		return null;
+	}
+	
+	public QueryResult issueQuery(CanonicalQuery query) throws KBException{
+		if (this.searchClass==null) throw new KBException("No GraphSearch class has been submitted " +
+				"to this KnowledgeGraph. Run setSearchClass to submit one.");
+		QueryHandler handler = new QueryHandler(this.graph,this.searchClass);
+		return handler.issueQuery(query);
+	}
+	
+	//implemented methods	
+	public Features getFeatures() {
+		return graph.getFeatures();
+	}
+
+	public Vertex addVertex(Object id) {
+		return graph.addVertex(id);
+	}
+
+	public Vertex getVertex(Object id) {
+		return graph.getVertex(id);
+	}
+
+	public void removeVertex(Vertex vertex) {
+		graph.removeVertex(vertex);	
+	}
+
+	public Iterable<Vertex> getVertices() {
+		return graph.getVertices();
+	}
+
+	public Iterable<Vertex> getVertices(String key, Object value) {
+		return graph.getVertices(key, value);
+	}
+
+	public Edge addEdge(Object id, Vertex outVertex, Vertex inVertex,
+			String label) {
+		return graph.addEdge(id, outVertex, inVertex, label);
+	}
+
+	public Edge getEdge(Object id) {
+		return graph.getEdge(id);
+	}
+
+	public void removeEdge(Edge edge) {
+		graph.removeEdge(edge);
+	}
+
+	public Iterable<Edge> getEdges() {
+		return graph.getEdges();
+	}
+
+	public Iterable<Edge> getEdges(String key, Object value) {
+		return graph.getEdges(key, value);
+	}
+
+	public void shutdown() {
+		graph.shutdown();
+	}
+
+	public <T extends Element> void dropKeyIndex(String key,
+			Class<T> elementClass) {
+		graph.dropKeyIndex(key, elementClass);
+	}
+
+	public <T extends Element> void createKeyIndex(String key,
+			Class<T> elementClass) {
+		graph.createKeyIndex(key, elementClass);
+	}
+
+	public <T extends Element> Set<String> getIndexedKeys(Class<T> elementClass) {
+		return graph.getIndexedKeys(elementClass);
+	}
+	
+}

@@ -1,0 +1,266 @@
+package edu.cmu.lti.oaqa.graph.canonical;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.KeyIndexableGraph;
+import com.tinkerpop.blueprints.Vertex;
+
+import edu.cmu.lti.oaqa.graph.exceptions.KBException;
+
+public class QueryHandler {
+	
+	private KeyIndexableGraph graph;
+	private GraphSearch searchClass;
+	private CustomNouns customizer;
+	private List<Vertex> previousVertexList;
+	
+	public QueryHandler (KeyIndexableGraph graph, GraphSearch searchClass, CustomNouns customizer){
+		this.graph=graph;
+		this.searchClass=searchClass;
+		this.customizer=customizer;
+		this.searchClass.setGraph(this.graph);
+	}
+	
+	public QueryHandler(KeyIndexableGraph graph, GraphSearch searchClass){
+		this.graph=graph;
+		this.searchClass=searchClass;
+		this.searchClass.setGraph(this.graph);
+	}
+	
+	public KeyIndexableGraph getGraph(){
+		return this.graph;
+	}
+	
+	private Iterable<Vertex> issueSingleFirstChunk(){
+		return null;
+	}
+	
+	private Iterable<Vertex> issueSingleMiddleChunk(){
+		return null;
+	}
+	
+	private Iterable<String> issueSingleEndChunk(){
+		return null;
+	}
+	
+	public QueryResult issueQuery(CanonicalQuery query) throws KBException{
+		CanonicalQueryHandler handler = new CanonicalQueryHandler(query,this.graph,this.searchClass,this.customizer);
+		return handler.execute();
+	}
+
+
+}
+
+class CanonicalQueryHandler{
+	private CanonicalQuery query;
+	private KeyIndexableGraph graph;
+	private GraphSearch searchClass;
+	private CustomNouns customizer;
+	private Iterable<Vertex> currentVertices;
+	
+	public CanonicalQueryHandler(CanonicalQuery query,
+						KeyIndexableGraph graph,
+						GraphSearch searchClass,
+						CustomNouns customizer){
+		this.query=query;
+		this.graph=graph;
+		this.searchClass=searchClass;
+		this.customizer=customizer;
+	}
+	
+	public QueryResult execute() throws KBException{
+		executeFirstQuery();
+		executeMiddleQueries();
+		return new QueryResult(turnFinalResultsIntoStrings(),this.currentVertices);
+	}
+
+	//main methods
+	private Iterable<String> turnFinalResultsIntoStrings() {
+		List<String> list = new ArrayList<String>();
+		query.resetQueryStack();
+		CanonicalChunk lastChunk = query.getLastChunk();
+		String noun = lastChunk.getNoun();
+		for(Vertex v:this.currentVertices){
+			Set<String> keys = v.getPropertyKeys();
+			if(keys.contains(noun)){
+				list.add(v.getProperty(noun).toString());
+			}
+			else{
+				Object fromGraphName = v.getProperty("name");
+				if(fromGraphName==null) continue;
+				else{
+					String name;
+					try {
+						name = ((JSONObject)((JSONArray)fromGraphName).get(0)).toString();
+					} catch (JSONException e) {
+						e.printStackTrace();
+						name="";
+					}
+					System.out.println("name as being passed from QueryHandler: "+name);	
+					list.add(name);
+				}
+			}
+		}
+		return list;
+	}
+	
+	private void executeFirstQuery() throws KBException {
+
+		CanonicalChunk chunk = query.pop();
+		
+		if(chunk.getVerb().equals(Verb.TEXT)){
+			this.currentVertices = this.searchClass.textSearch(chunk.getNoun());
+		}
+		
+		else if(chunk.getVerb().equals(Verb.TYPE)){
+			this.currentVertices = this.searchClass.typeSearch(chunk.getNoun());
+		}
+		
+		else throw new KBException("first chunk must have either the verb TEXT or TYPE");
+		System.out.println(1 + ": "+((List<Vertex>)this.currentVertices).size());
+		System.out.println("chunk: "+ chunk);
+
+	}
+
+	private void executeMiddleQueries() {
+		int count=1; //already done first chunk
+		while(!query.isEmpty()){
+			CanonicalChunk chunk = query.pop();
+			Verb verb = chunk.getVerb();
+			if(verb.equals(Verb.TEXT)){
+				doMiddleTextChunk(chunk);
+			}
+			else if(verb.equals(Verb.TYPE)){
+				doMiddleTypeChunk(chunk);
+			}
+			else if(verb.equals(Verb.TRAVERSE) || verb.equals(Verb.TRAVERSEIN) || verb.equals(Verb.TRAVERSEOUT)){
+				doMiddleTraverseChunk(chunk);
+			}
+			else{
+				throw new IllegalArgumentException("Verb not correct or something");
+			}
+			System.out.println(++count +": "+((List<Vertex>)this.currentVertices).size());
+			System.out.println("chunk: "+ chunk);
+		}
+	}
+
+	private void executeLastQuery() {
+		
+	}
+	
+	//helper methods
+	//middle query methods
+	private void doMiddleTextChunk(CanonicalChunk chunk) {
+		List<Vertex> filteredList = new ArrayList<Vertex>();
+		for(Vertex currentV:this.currentVertices){
+			if(vertexMatchesChunk(currentV,chunk)){
+				filteredList.add(currentV);
+			}
+		}
+		this.currentVertices=filteredList;
+	}
+
+	private void doMiddleTypeChunk(CanonicalChunk chunk) {
+		List<Vertex> filteredList = new ArrayList<Vertex>();
+		for(Vertex currentV:this.currentVertices){
+			if(vertexMatchesChunk(currentV,chunk)){
+				filteredList.add(currentV);
+			}
+		}
+		this.currentVertices=filteredList;
+	}
+
+	private void doMiddleTraverseChunk(CanonicalChunk chunk) {
+		Verb verb = chunk.getVerb();
+		Direction direction;
+		if(verb.equals(Verb.TRAVERSE)) direction = Direction.BOTH;
+		else if (verb.equals(Verb.TRAVERSEIN)) direction = Direction.IN;
+		else if (verb.equals(Verb.TRAVERSEOUT)) direction = Direction.OUT;
+		else throw new IllegalArgumentException("Verb must be a traverse");
+		
+		String noun = chunk.getNoun();
+		
+		List<Vertex> results = new ArrayList<Vertex>();
+		if(noun!=null){
+			System.out.println("doing a non null traversal");
+			for(Vertex currentV: this.currentVertices){
+				for(Vertex adjV: currentV.query().direction(direction).labels(noun).vertices()){
+					results.add(adjV);
+				}
+			}
+		}
+		
+		else{ //null traversal			
+			System.out.println("doing a null traversal");
+			//first looks at current vertices to see if they have the next chunk's type/text
+			//and if so, only returns them, if not it returns neighbors with this type/text
+			CanonicalChunk nextChunk = query.pop(); //query.peek();
+			System.out.println("next chunk: "+nextChunk);
+			for(Vertex currentV: this.currentVertices){
+				System.out.println("testing current vertex in current vertices");
+				if(vertexMatchesChunk(currentV,nextChunk)){
+					results.add(currentV);
+				}
+			}
+			System.out.println("this should be 0!! "+results.size());
+			if(results.isEmpty()){ //didn't find any current vertices with the property
+				System.out.println("traversing to other vertices");
+				for(Vertex currentV: this.currentVertices){
+					for(Vertex adjV: currentV.query().direction(direction).vertices()){
+						if(vertexMatchesChunk(adjV,nextChunk)){
+							results.add(adjV);
+						}
+					}	
+				}
+			}
+		}
+		this.currentVertices=results;
+	}
+
+	private boolean vertexMatchesChunk(Vertex currentV, CanonicalChunk chunk) {
+		Verb verb = chunk.getVerb();
+		String noun = chunk.getNoun();
+		Set<String> map = currentV.getPropertyKeys();
+		if(verb.equals(Verb.TEXT)){
+			System.out.println("noun:"+noun);
+			for(String key:map){
+				Object value = currentV.getProperty(key);
+				if (value.equals(noun)){
+					return true;
+				}
+			}
+		}
+		else if(verb.equals(Verb.TYPE)){
+			//for filtering vertices by type
+			if(map.contains("type")&&currentV.getProperty("type").toString().equals(noun)){
+				System.out.println("map: "+map.toString());
+				System.out.println("currentV's type"+ currentV.getProperty("type"));
+				System.out.println("noun: "+noun);
+				
+				System.out.println("24 shouldn't be here" + currentV.toString());
+				return true;
+			}
+			//for filtering vertices during null travesals by a property
+			for(String key:map){
+				//Object value = currentV.getProperty(key);
+				//System.out.println("key: "+ key+ " noun: "+noun);
+				if (key.equals(noun)){
+					return true;
+				}
+			}
+		}
+		else{
+			throw new Error("not sure what to do with the Verb: "+verb.toString());
+		}
+		return false;
+	}
+	
+	
+}
